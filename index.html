@@ -167,6 +167,7 @@
           ↑ Nhập file
         </label>
         <input type="file" id="import-file" class="opacity-0 w-0 h-0 overflow-hidden" onchange="importBackup(event)" />
+        <button type="button" onclick="openPasteModal()" class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-semibold">📋 Dán JSON/CSV</button>
         <button type="button" onclick="restoreSample()" class="px-3 py-1.5 rounded-lg bg-emerald-50/60 text-emerald-700 text-xs font-semibold">↻ Khôi phục mẫu</button>
         <button type="button" onclick="resetAll()" class="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 text-xs font-semibold">🗑 Reset sạch</button>
       </div>
@@ -206,6 +207,22 @@
       <p>Đơn vị tiền tệ: VNĐ</p>
     </footer>
   </main>
+
+  <!-- Modal Dán Nội Dung Sao Lưu -->
+  <div id="paste-modal" class="fixed inset-0 z-50 bg-black/50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md p-5 space-y-3 shadow-xl">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base">Nhập dữ liệu từ JSON / CSV</h3>
+        <button type="button" onclick="closePasteModal()" class="text-slate-400 font-bold text-lg">✕</button>
+      </div>
+      <p class="text-xs text-slate-500">Mở file <code>thu-chi.json</code> hoặc <code>thu-chi.csv</code>, sao chép toàn bộ nội dung rồi dán vào đây:</p>
+      <textarea id="paste-input" rows="7" class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-mono outline-none focus:border-emerald-600 focus:bg-white" placeholder='[{"date":"2026-11-21","type":"expense","category":"Ăn uống","amount":85000,"payment":"Tiền mặt","desc":"Ăn trưa","note":""}]'></textarea>
+      <div class="flex gap-2 pt-1">
+        <button type="button" onclick="closePasteModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Hủy</button>
+        <button type="button" onclick="importFromText()" class="flex-1 py-2.5 rounded-xl btn-green text-xs font-bold">Nhập ngay</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const CATEGORIES = {
@@ -381,35 +398,4 @@
       if (filtered.length === 0) {
         tbody.innerHTML = '';
         txEmpty.classList.remove('hidden');
-      } else {
-        txEmpty.classList.add('hidden');
-        tbody.innerHTML = filtered.map(t => `
-          <tr>
-            <td class="py-2.5 pr-2 text-slate-500 whitespace-nowrap">${t.date.split('-').reverse().join('/')}</td>
-            <td class="py-2.5 px-2">
-              <div class="font-bold text-slate-800">${t.desc}</div>
-              <div class="text-[10px] text-slate-400">${t.category} • ${t.payment}</div>
-            </td>
-            <td class="py-2.5 pl-2 text-right font-bold whitespace-nowrap ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}">
-              ${t.type === 'income' ? '+' : '-'}${formatVND(t.amount)}
-            </td>
-            <td class="py-2.5 pl-2 text-right">
-              <button type="button" onclick="deleteTx(${t.id})" class="text-slate-300 hover:text-rose-500 font-bold">✕</button>
-            </td>
-          </tr>
-        `).join('');
-      }
-    }
-
-    function exportJSON() {
-      const blob = new Blob([JSON.stringify(transactions, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'thu-chi.json';
-      a.click();
-    }
-
-    function exportCSV() {
-      const header = 'Ngay,Loai,DanhMuc,SoTien,HinhThuc,DienGiai,GhiChu\n';
-      const rows = transactions.map(t => `${t.date},${t.type},${t.category},${t.amount},${t.payment},"${t.desc}","${t.note}"`).join('\n');
-      const blob = new Blob(['\uFEFF' + he
+   
