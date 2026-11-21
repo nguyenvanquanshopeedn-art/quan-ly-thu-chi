@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Quản Lý Thu Chi Hằng Ngày</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background-color: #f4f7f6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .card { background: #ffffff; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+    .btn-green { background-color: #0d8a53; color: white; }
+    .btn-green:active { background-color: #0a6e42; }
+    input, select { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; width: 100%; font-size: 14px; outline: none; }
+    input:focus, select:focus { border-color: #0d8a53; background-color: #fff; }
+  </style>
+</head>
+<body class="pb-10 text-slate-800">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-slate-100 px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3 overflow-hidden">
+      <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold shrink-0">₫</div>
+      <div class="truncate">
+        <h1 class="font-bold text-base truncate">Quản Lý Thu Chi Hằng Ngày</h1>
+        <p class="text-xs text-slate-500 truncate">Sổ tay tài chính cá nhân thông minh</p>
+      </div>
+    </div>
+    <button onclick="document.getElementById('form-section').scrollIntoView({behavior:'smooth'})" class="btn-green px-3.5 py-2 rounded-full text-xs font-semibold shrink-0 shadow-sm">
+      + Ghi giao dịch
+    </button>
+  </header>
+
+  <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
+    <!-- KPI Cards -->
+    <div class="card p-5 flex justify-between items-start">
+      <div>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">TỔNG THU NHẬP</p>
+        <p id="kpi-income" class="text-2xl font-bold text-emerald-700 mt-1">0 ₫</p>
+        <p id="kpi-income-count" class="text-xs text-slate-400 mt-1">0 khoản thu được ghi nhận</p>
+      </div>
+      <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">↗</div>
+    </div>
+
+    <div class="card p-5 flex justify-between items-start">
+      <div>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">TỔNG CHI TIÊU</p>
+        <p id="kpi-expense" class="text-2xl font-bold text-rose-600 mt-1">0 ₫</p>
+        <p id="kpi-expense-count" class="text-xs text-slate-400 mt-1">0 khoản chi được ghi nhận</p>
+      </div>
+      <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">↘</div>
+    </div>
+
+    <div class="rounded-2xl p-5 text-white shadow-md flex justify-between items-start" style="background: linear-gradient(135deg, #0d8a53, #06683d);">
+      <div>
+        <p class="text-xs font-semibold text-emerald-100 uppercase tracking-wider">SỐ DƯ HIỆN TẠI</p>
+        <p id="kpi-balance" class="text-2xl font-bold mt-1">0 ₫</p>
+        <p id="kpi-balance-note" class="text-xs text-emerald-100 mt-1">Thu nhập và chi tiêu cân bằng</p>
+      </div>
+      <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center font-bold">$</div>
+    </div>
+
+    <div class="card p-5">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">TỶ LỆ TÍCH LŨY</p>
+          <p id="kpi-saving-rate" class="text-2xl font-bold text-slate-800 mt-1">0,0%</p>
+        </div>
+        <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">◔</div>
+      </div>
+      <div class="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
+        <div id="saving-bar" class="bg-emerald-600 h-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Form Thêm Giao Dịch Mới -->
+    <div id="form-section" class="card p-5 space-y-4">
+      <div>
+        <h2 class="text-lg font-bold">Thêm Giao Dịch Mới</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Nhập nhanh khoản thu hoặc chi tiêu hằng ngày (đơn vị VNĐ)</p>
+        <span class="inline-block mt-2 px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-[11px] font-medium">Tự động cập nhật KPI & biểu đồ</span>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">NGÀY GIAO DỊCH <span class="text-rose-500">*</span></label>
+        <input type="date" id="tx-date" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">LOẠI GIAO DỊCH <span class="text-rose-500">*</span></label>
+        <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
+          <button type="button" id="btn-type-expense" onclick="setTxType('expense')" class="py-2 rounded-lg text-xs font-bold bg-rose-600 text-white shadow-sm transition">Chi tiêu (-)</button>
+          <button type="button" id="btn-type-income" onclick="setTxType('income')" class="py-2 rounded-lg text-xs font-bold text-slate-600 transition">Thu nhập (+)</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">DANH MỤC <span class="text-rose-500">*</span></label>
+        <select id="tx-category"></select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">SỐ TIỀN (VNĐ) <span class="text-rose-500">*</span></label>
+        <div class="relative">
+          <input type="number" id="tx-amount" placeholder="Ví dụ: 85000" />
+          <span class="absolute right-3 top-2.5 text-xs font-semibold text-slate-400">VNĐ</span>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">HÌNH THỨC THANH TOÁN</label>
+        <select id="tx-payment">
+          <option value="Chuyển khoản">Chuyển khoản</option>
+          <option value="Tiền mặt">Tiền mặt</option>
+          <option value="Ví điện tử">Ví điện tử</option>
+          <option value="Thẻ tín dụng">Thẻ tín dụng</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">DIỄN GIẢI CHI TIẾT <span class="text-rose-500">*</span></label>
+        <input type="text" id="tx-desc" placeholder="Ví dụ: Ăn trưa cơm tấm, Tiền điện..." />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">GHI CHÚ (TÙY CHỌN)</label>
+        <input type="text" id="tx-note" placeholder="Thêm ghi chú nhắc nhở hoặc thông tin bổ sung..." />
+      </div>
+
+      <div class="space-y-2 pt-2">
+        <button type="button" onclick="clearForm()" class="w-full py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Xóa ô nhập</button>
+        <button type="button" onclick="addTransaction()" class="w-full py-3 rounded-xl btn-green text-xs font-bold shadow-sm">+ Lưu giao dịch</button>
+      </div>
+    </div>
+
+    <!-- Cơ Cấu Chi Tiêu -->
+    <div class="card p-5">
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <h2 class="text-base font-bold">Cơ Cấu Chi Tiêu</h2>
+          <p class="text-xs text-slate-500">Phân bổ chi tiêu theo từng danh mục</p>
+        </div>
+        <span id="chart-total-badge" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold">0 ₫</span>
+      </div>
+      <div id="chart-empty" class="py-10 text-center">
+        <div class="w-10 h-10 mx-auto rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mb-2">◔</div>
+        <p class="text-xs font-bold text-slate-600">Chưa có dữ liệu chi tiêu</p>
+        <p class="text-[11px] text-slate-400 mt-0.5">Thêm khoản chi để xem biểu đồ cơ cấu</p>
+      </div>
+      <div id="chart-wrapper" class="hidden max-w-[240px] mx-auto">
+        <canvas id="expenseChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Nhật Ký Giao Dịch -->
+    <div class="card p-5 space-y-3">
+      <div class="flex items-center gap-2">
+        <h2 class="text-base font-bold">Nhật Ký Giao Dịch</h2>
+        <span id="tx-count-badge" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-bold">0 giao dịch</span>
+      </div>
+      <p class="text-xs text-slate-500">Tìm kiếm, lọc theo loại/danh mục, xuất dữ liệu hoặc quản lý bản ghi</p>
+
+      <div class="flex flex-wrap gap-2">
+        <button onclick="exportCSV()" class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold">↓ Xuất CSV</button>
+        <button onclick="exportJSON()" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold">&lt;/&gt; Xuất JSON</button>
+        <button onclick="restoreSample()" class="px-3 py-1.5 rounded-lg bg-emerald-50/60 text-emerald-700 text-xs font-semibold">↻ Khôi phục mẫu</button>
+        <button onclick="resetAll()" class="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 text-xs font-semibold">🗑 Reset sạch</button>
+      </div>
+
+      <input type="text" id="filter-search" oninput="render()" placeholder="🔍 Tìm theo diễn giải hoặc ghi chú..." />
+      <select id="filter-type" onchange="render()">
+        <option value="all">Tất cả loại (Thu & Chi)</option>
+        <option value="income">Chỉ Thu nhập (+)</option>
+        <option value="expense">Chỉ Chi tiêu (-)</option>
+      </select>
+      <select id="filter-category" onchange="render()">
+        <option value="all">Tất cả danh mục</option>
+      </select>
+      <button onclick="clearFilters()" class="w-full py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Xóa lọc</button>
+
+      <!-- Bảng danh sách -->
+      <div class="overflow-x-auto pt-2">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-slate-100 text-slate-400 uppercase text-[10px]">
+              <th class="py-2 pr-2">Ngày</th>
+              <th class="py-2 px-2">Danh mục / Diễn giải</th>
+              <th class="py-2 pl-2 text-right">Số tiền</th>
+              <th class="py-2 pl-2 text-right"></th>
+            </tr>
+          </thead>
+          <tbody id="tx-table-body" class="divide-y divide-slate-100"></tbody>
+        </table>
+        <div id="tx-empty" class="py-10 text-center">
+          <p class="text-xs font-bold text-slate-600">Không tìm thấy giao dịch nào</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Thử thay đổi từ khóa tìm kiếm, bộ lọc hoặc thêm giao dịch mới ở biểu mẫu phía trên.</p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="text-center text-[11px] text-slate-400 space-y-1 pt-2">
+      <p>Dữ liệu được lưu cục bộ an toàn trên thiết bị (localStorage).</p>
+      <p>Đơn vị tiền tệ: VNĐ</p>
+    </footer>
+  </main>
+
+  <script>
+    const CATEGORIES = {
+      expense: ['Ăn uống', 'Di chuyển', 'Nhà ở & Điện nước', 'Mua sắm', 'Giải trí', 'Sức khỏe', 'Giáo dục', 'Khác'],
+      income: ['Lương', 'Thưởng', 'Đầu tư', 'Kinh doanh', 'Thu nhập khác']
+    };
+    let currentType = 'expense';
+    let transactions = JSON.parse(localStorage.getItem('ql_thuchi_data') || '[]');
+    let chartInstance = null;
+
+    function formatVND(num) {
+      return new Intl.NumberFormat('vi-VN').format(num) + ' ₫';
+    }
+
+    function setTxType(type) {
+      currentType = type;
+      const btnExp = document.getElementById('btn-type-expense');
+      const btnInc = document.getElementById('btn-type-income');
+      if (type === 'expense') {
+        btnExp.className = 'py-2 rounded-lg text-xs font-bold bg-rose-600 text-white shadow-sm transition';
+        btnInc.className = 'py-2 rounded-lg text-xs font-bold text-slate-600 transition';
+      } else {
+        btnInc.className = 'py-2 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm transition';
+        btnExp.className = 'py-2 rounded-lg text-xs font-bold text-slate-600 transition';
+      }
+      const catSelect = document.getElementById('tx-category');
+      catSelect.innerHTML = CATEGORIES[type].map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    function init() {
+      document.getElementById('tx-date').valueAsDate = new Date();
+      setTxType('expense');
+      const allCats = [...CATEGORIES.expense, ...CATEGORIES.income];
+      const filterCat = document.getElementById('filter-category');
+      filterCat.innerHTML = '<option value="all">Tất cả danh mục</option>' + allCats.map(c => `<option value="${c}">${c}</option>`).join('');
+      render();
+    }
+
+    function save() {
+      localStorage.setItem('ql_thuchi_data', JSON.stringify(transactions));
+      render();
+    }
+
+    function addTransaction() {
+      const date = document.getElementById('tx-date').value;
+      const category = document.getElementById('tx-category').value;
+      const amount = Number(document.getElementById('tx-amount').value);
+      const payment = document.getElementById('tx-payment').value;
+      const desc = document.getElementById('tx-desc').value.trim();
+      const note = document.getElementById('tx-note').value.trim();
+
+      if (!date || !amount || amount <= 0 || !desc) {
+        alert('Vui lòng nhập đầy đủ Ngày, Số tiền (>0) và Diễn giải chi tiết!');
+        return;
+      }
+
+      transactions.unshift({
+        id: Date.now(),
+        date,
+        type: currentType,
+        category,
+        amount,
+        payment,
+        desc,
+        note
+      });
+      clearForm();
+      save();
+    }
+
+    function deleteTx(id) {
+      if (confirm('Xóa giao dịch này?')) {
+        transactions = transactions.filter(t => t.id !== id);
+        save();
+      }
+    }
+
+    function clearForm() {
+      document.getElementById('tx-amount').value = '';
+      document.getElementById('tx-desc').value = '';
+      document.getElementById('tx-note').value = '';
+    }
+
+    function clearFilters() {
+      document.getElementById('filter-search').value = '';
+      document.getElementById('filter-type').value = 'all';
+      document.getElementById('filter-category').value = 'all';
+      render();
+    }
+
+    function restoreSample() {
+      const today = new Date().toISOString().split('T')[0];
+      transactions = [
+        { id: 1, date: today, type: 'income', category: 'Lương', amount: 15000000, payment: 'Chuyển khoản', desc: 'Lương tháng', note: '' },
+        { id: 2, date: today, type: 'expense', category: 'Ăn uống', amount: 85000, payment: 'Tiền mặt', desc: 'Ăn trưa cơm tấm', note: '' },
+        { id: 3, date: today, type: 'expense', category: 'Nhà ở & Điện nước', amount: 1200000, payment: 'Chuyển khoản', desc: 'Tiền điện tháng này', note: '' }
+      ];
+      save();
+    }
+
+    function resetAll() {
+      if (confirm('Bạn có chắc muốn xóa sạch toàn bộ dữ liệu?')) {
+        transactions = [];
+        save();
+      }
+    }
+
+    function render() {
+      let totalInc = 0, countInc = 0, totalExp = 0, countExp = 0;
+      const expByCat = {};
+
+      transactions.forEach(t => {
+        if (t.type === 'income') {
+          totalInc += t.amount;
+          countInc++;
+        } else {
+          totalExp += t.amount;
+          countExp++;
+          expByCat[t.category] = (expByCat[t.category] || 0) + t.amount;
+        }
+      });
+
+      const balance = totalInc - totalExp;
+      const savingRate = totalInc > 0 ? Math.max(0, ((balance / totalInc) * 100)) : 0;
+
+      document.getElementById('kpi-income').textContent = formatVND(totalInc);
+      document.getElementById('kpi-income-count').textContent = `${countInc} khoản thu được ghi nhận`;
+      document.getElementById('kpi-expense').textContent = formatVND(totalExp);
+      document.getElementById('kpi-expense-count').textContent = `${countExp} khoản chi được ghi nhận`;
+      document.getElementById('kpi-balance').textContent = formatVND(balance);
+      document.getElementById('kpi-balance-note').textContent = balance > 0 ? 'Tài chính đang thặng dư' : (balance < 0 ? 'Chi tiêu vượt thu nhập' : 'Thu nhập và chi tiêu cân bằng');
+      document.getElementById('kpi-saving-rate').textContent = savingRate.toFixed(1).replace('.', ',') + '%';
+      document.getElementById('saving-bar').style.width = Math.min(100, savingRate) + '%';
+      document.getElementById('chart-total-badge').textContent = formatVND(totalExp);
+      document.getElementById('tx-count-badge').textContent = `${transactions.length} giao dịch`;
+
+      // Chart
+      const chartEmpty = document.getElementById('chart-empty');
+      const chartWrapper = document.getElementById('chart-wrapper');
+      if (totalExp === 0) {
+        chartEmpty.classList.remove('hidden');
+        chartWrapper.classList.add('hidden');
+      } else {
+        chartEmpty.classList.add('hidden');
+        chartWrapper.classList.remove('hidden');
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(expByCat),
+            datasets: [{
+              data: Object.values(expByCat),
+              backgroundColor: ['#0d8a53', '#e11d48', '#f59e0b', '#3b82f6', '#8b5cf6', '#14b8a6', '#64748b']
+            }]
+          },
+          options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
+        });
+      }
+
+      // Filter & Table
+      const q = document.getElementById('filter-search').value.toLowerCase();
+      const fType = document.getElementById('filter-type').value;
+      const fCat = document.getElementById('filter-category').value;
+
+      const filtered = transactions.filter(t => {
+        const matchQ = t.desc.toLowerCase().includes(q) || (t.note && t.note.toLowerCase().includes(q));
+        const matchT = fType === 'all' || t.type === fType;
+        const matchC = fCat === 'all' || t.category === fCat;
+        return matchQ && matchT && matchC;
+      });
+
+      const tbody = document.getElementById('tx-table-body');
+      const txEmpty = document.getElementById('tx-empty');
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        txEmpty.classList.remove('hidden');
+      } else {
+        txEmpty.classList.add('hidden');
+        tbody.innerHTML = filtered.map(t => `
+          <tr>
+            <td class="py-2.5 pr-2 text-slate-500 whitespace-nowrap">${t.date.split('-').reverse().join('/')}</td>
+            <td class="py-2.5 px-2">
+              <div class="font-bold text-slate-800">${t.desc}</div>
+              <div class="text-[10px] text-slate-400">${t.category} • ${t.payment}</div>
+            </td>
+            <td class="py-2.5 pl-2 text-right font-bold whitespace-nowrap ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}">
+              ${t.type === 'income' ? '+' : '-'}${formatVND(t.amount)}
+            </td>
+            <td class="py-2.5 pl-2 text-right">
+              <button onclick="deleteTx(${t.id})" class="text-slate-300 hover:text-rose-500 font-bold">✕</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(transactions, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'thu-chi.json';
+      a.click();
+    }
+
+    function exportCSV() {
+      const header = 'Ngay,Loai,DanhMuc,SoTien,HinhThuc,DienGiai,GhiChu\n';
+      const rows = transactions.map(t => `${t.date},${t.type},${t.category},${t.amount},${t.payment},"${t.desc}","${t.note}"`).join('\n');
+      const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'thu-chi.csv';
+      a.click();
+    }
+
+    init();
+  </script>
+</body>
+        </html>
+        
