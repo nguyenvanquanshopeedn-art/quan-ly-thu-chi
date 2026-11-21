@@ -170,9 +170,23 @@
           ↑ Nhập file
         </label>
         <input type="file" id="import-file" class="opacity-0 w-0 h-0 overflow-hidden" onchange="importBackup(event)" />
-        <button type="button" onclick="openPasteModal()" class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-semibold">📋 Dán JSON/CSV</button>
+        <button type="button" id="btn-toggle-paste" onclick="togglePasteBox()" class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-semibold">📋 Dán JSON/CSV</button>
         <button type="button" onclick="restoreSample()" class="px-3 py-1.5 rounded-lg bg-emerald-50/60 text-emerald-700 text-xs font-semibold">↻ Khôi phục mẫu</button>
         <button type="button" onclick="resetAll()" class="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 text-xs font-semibold">🗑 Reset sạch</button>
+      </div>
+
+      <!-- Khung Dán JSON/CSV mở trực tiếp ngay tại chỗ -->
+      <div id="paste-box" style="display:none;" class="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-3.5 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-indigo-900">Nhập dữ liệu bằng cách dán JSON / CSV</span>
+          <button type="button" onclick="togglePasteBox(false)" class="text-xs font-bold text-slate-500 px-2 py-0.5">✕ Đóng</button>
+        </div>
+        <textarea id="paste-input" rows="5" class="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs font-mono outline-none focus:border-indigo-500" placeholder='[{"date":"2026-11-21","type":"expense","category":"Ăn uống","amount":85000,"payment":"Tiền mặt","desc":"Ăn trưa","note":""}]'></textarea>
+        <div id="modal-msg" style="display:none;" class="rounded-lg px-3 py-2 text-xs font-semibold"></div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="importFromText('merge')" class="py-2 rounded-xl bg-white border border-emerald-200 text-emerald-700 text-xs font-bold">+ Gộp dữ liệu</button>
+          <button type="button" onclick="importFromText('replace')" class="py-2 rounded-xl btn-green text-xs font-bold">↻ Ghi đè toàn bộ</button>
+        </div>
       </div>
 
       <input type="text" id="filter-search" oninput="render()" placeholder="🔍 Tìm theo diễn giải hoặc ghi chú..." />
@@ -210,24 +224,6 @@
       <p>Đơn vị tiền tệ: VNĐ</p>
     </footer>
   </main>
-
-  <!-- Modal Dán Nội Dung Sao Lưu -->
-  <div id="paste-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.55); align-items:center; justify-content:center; padding:16px;">
-    <div style="background:#ffffff; border-radius:16px; width:100%; max-width:440px; padding:20px; box-shadow:0 12px 32px rgba(0,0,0,0.2);" class="space-y-3">
-      <div class="flex items-center justify-between">
-        <h3 class="font-bold text-base">Nhập dữ liệu từ JSON / CSV</h3>
-        <button type="button" onclick="closePasteModal()" class="text-slate-500 font-bold text-lg px-2">✕</button>
-      </div>
-      <p class="text-xs text-slate-500">Dán nội dung file <code>thu-chi.json</code> hoặc <code>thu-chi.csv</code> vào bên dưới:</p>
-      <textarea id="paste-input" rows="6" style="width:100%; border:1px solid #cbd5e1; background:#f8fafc; border-radius:12px; padding:10px; font-size:12px; font-family:monospace;" placeholder='[{"date":"2026-11-21","type":"expense","category":"Ăn uống","amount":85000,"payment":"Tiền mặt","desc":"Ăn trưa","note":""}]'></textarea>
-      <div id="modal-msg" style="display:none;" class="rounded-lg px-3 py-2 text-xs font-semibold"></div>
-      <div class="grid grid-cols-2 gap-2 pt-1">
-        <button type="button" onclick="importFromText('merge')" class="py-2.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold">+ Gộp dữ liệu</button>
-        <button type="button" onclick="importFromText('replace')" class="py-2.5 rounded-xl btn-green text-xs font-bold">↻ Ghi đè toàn bộ</button>
-      </div>
-      <button type="button" onclick="closePasteModal()" class="w-full py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Đóng</button>
-    </div>
-  </div>
 
   <script>
     const CATEGORIES = {
@@ -389,4 +385,12 @@
       document.getElementById('chart-total-badge').textContent = formatVND(totalExp);
       document.getElementById('tx-count-badge').textContent = `${transactions.length} giao dịch`;
 
-      const char
+      const chartEmpty = document.getElementById('chart-empty');
+      const chartWrapper = document.getElementById('chart-wrapper');
+      if (totalExp === 0) {
+        chartEmpty.classList.remove('hidden');
+        chartWrapper.classList.add('hidden');
+      } else {
+        chartEmpty.classList.add('hidden');
+        chartWrapper.classList.remove('hidden');
+        const ctx = document.getElementBy
