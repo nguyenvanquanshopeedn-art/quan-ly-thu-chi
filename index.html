@@ -17,7 +17,6 @@
 </head>
 <body class="pb-10 text-slate-800">
 
-  <!-- Header -->
   <header class="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-slate-100 px-4 py-3 flex items-center justify-between">
     <div class="flex items-center gap-3 overflow-hidden">
       <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold shrink-0">₫</div>
@@ -26,16 +25,14 @@
         <p class="text-xs text-slate-500 truncate">Sổ tay tài chính cá nhân thông minh</p>
       </div>
     </div>
-    <button type="button" onclick="document.getElementById('form-section').scrollIntoView({behavior:'smooth'})" class="btn-green px-3.5 py-2 rounded-full text-xs font-semibold shrink-0 shadow-sm">
+    <button type="button" id="btn-go-form" class="btn-green px-3.5 py-2 rounded-full text-xs font-semibold shrink-0 shadow-sm">
       + Ghi giao dịch
     </button>
   </header>
 
   <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
-    <!-- Thông báo hệ thống -->
     <div id="status-banner" style="display:none;" class="rounded-xl px-4 py-3 text-xs font-semibold"></div>
 
-    <!-- KPI Cards -->
     <div class="card p-5 flex justify-between items-start">
       <div>
         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">TỔNG THU NHẬP</p>
@@ -76,7 +73,6 @@
       </div>
     </div>
 
-    <!-- Form Thêm Giao Dịch Mới -->
     <div id="form-section" class="card p-5 space-y-4">
       <div>
         <h2 class="text-lg font-bold">Thêm Giao Dịch Mới</h2>
@@ -92,8 +88,8 @@
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1">LOẠI GIAO DỊCH <span class="text-rose-500">*</span></label>
         <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
-          <button type="button" id="btn-type-expense" onclick="setTxType('expense')" class="py-2 rounded-lg text-xs font-bold bg-rose-600 text-white shadow-sm transition">Chi tiêu (-)</button>
-          <button type="button" id="btn-type-income" onclick="setTxType('income')" class="py-2 rounded-lg text-xs font-bold text-slate-600 transition">Thu nhập (+)</button>
+          <button type="button" id="btn-type-expense" class="py-2 rounded-lg text-xs font-bold bg-rose-600 text-white shadow-sm transition">Chi tiêu (-)</button>
+          <button type="button" id="btn-type-income" class="py-2 rounded-lg text-xs font-bold text-slate-600 transition">Thu nhập (+)</button>
         </div>
       </div>
 
@@ -131,12 +127,11 @@
       </div>
 
       <div class="space-y-2 pt-2">
-        <button type="button" onclick="clearForm()" class="w-full py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Xóa ô nhập</button>
-        <button type="button" onclick="addTransaction()" class="w-full py-3 rounded-xl btn-green text-xs font-bold shadow-sm">+ Lưu giao dịch</button>
+        <button type="button" id="btn-clear-form" class="w-full py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Xóa ô nhập</button>
+        <button type="button" id="btn-save-tx" class="w-full py-3 rounded-xl btn-green text-xs font-bold shadow-sm">+ Lưu giao dịch</button>
       </div>
     </div>
 
-    <!-- Cơ Cấu Chi Tiêu -->
     <div class="card p-5">
       <div class="flex justify-between items-center mb-4">
         <div>
@@ -155,7 +150,6 @@
       </div>
     </div>
 
-    <!-- Nhật Ký Giao Dịch -->
     <div class="card p-5 space-y-3">
       <div class="flex items-center gap-2">
         <h2 class="text-base font-bold">Nhật Ký Giao Dịch</h2>
@@ -164,41 +158,40 @@
       <p class="text-xs text-slate-500">Tìm kiếm, lọc theo loại/danh mục, nhập/xuất dữ liệu hoặc quản lý bản ghi</p>
 
       <div class="flex flex-wrap gap-2 items-center">
-        <button type="button" onclick="exportCSV()" class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold">↓ Xuất CSV</button>
-        <button type="button" onclick="exportJSON()" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold">&lt;/&gt; Xuất JSON</button>
+        <button type="button" id="btn-export-csv" class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold">↓ Xuất CSV</button>
+        <button type="button" id="btn-export-json" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold">&lt;/&gt; Xuất JSON</button>
         <label for="import-file" class="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold cursor-pointer">
           ↑ Nhập file
         </label>
-        <input type="file" id="import-file" class="opacity-0 w-0 h-0 overflow-hidden" onchange="importBackup(event)" />
-        <button type="button" id="btn-toggle-paste" onclick="togglePasteBox()" class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-semibold">📋 Dán JSON/CSV</button>
-        <button type="button" onclick="restoreSample()" class="px-3 py-1.5 rounded-lg bg-emerald-50/60 text-emerald-700 text-xs font-semibold">↻ Khôi phục mẫu</button>
-        <button type="button" onclick="resetAll()" class="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 text-xs font-semibold">🗑 Reset sạch</button>
+        <input type="file" id="import-file" class="opacity-0 w-0 h-0 overflow-hidden" />
+        <button type="button" id="btn-sample" class="px-3 py-1.5 rounded-lg bg-emerald-50/60 text-emerald-700 text-xs font-semibold">↻ Khôi phục mẫu</button>
+        <button type="button" id="btn-reset" class="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 text-xs font-semibold">🗑 Reset sạch</button>
       </div>
 
-      <!-- Khung Dán JSON/CSV mở trực tiếp ngay tại chỗ -->
-      <div id="paste-box" style="display:none;" class="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-3.5 space-y-2.5">
+      <!-- Khung dán JSON/CSV mở sẵn để dùng trực tiếp trên app -->
+      <div id="paste-box" class="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-3.5 space-y-2.5">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-indigo-900">Nhập dữ liệu bằng cách dán JSON / CSV</span>
-          <button type="button" onclick="togglePasteBox(false)" class="text-xs font-bold text-slate-500 px-2 py-0.5">✕ Đóng</button>
+          <span class="text-xs font-bold text-indigo-900">Dán nội dung JSON / CSV để nhập</span>
+          <button type="button" id="btn-clear-paste" class="text-xs font-semibold text-slate-600 px-2 py-0.5 bg-white rounded border">Xóa ô dán</button>
         </div>
-        <textarea id="paste-input" rows="5" class="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs font-mono outline-none focus:border-indigo-500" placeholder='[{"date":"2026-11-21","type":"expense","category":"Ăn uống","amount":85000,"payment":"Tiền mặt","desc":"Ăn trưa","note":""}]'></textarea>
+        <textarea id="paste-input" rows="4" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-xs font-mono outline-none" placeholder='[{"date":"2026-11-21","type":"expense","category":"Ăn uống","amount":85000,"payment":"Tiền mặt","desc":"Ăn trưa","note":""}]'></textarea>
         <div id="modal-msg" style="display:none;" class="rounded-lg px-3 py-2 text-xs font-semibold"></div>
         <div class="grid grid-cols-2 gap-2">
-          <button type="button" onclick="importFromText('merge')" class="py-2 rounded-xl bg-white border border-emerald-200 text-emerald-700 text-xs font-bold">+ Gộp dữ liệu</button>
-          <button type="button" onclick="importFromText('replace')" class="py-2 rounded-xl btn-green text-xs font-bold">↻ Ghi đè toàn bộ</button>
+          <button type="button" id="btn-import-merge" class="py-2 rounded-xl bg-white border border-emerald-300 text-emerald-700 text-xs font-bold">+ Gộp dữ liệu</button>
+          <button type="button" id="btn-import-replace" class="py-2 rounded-xl btn-green text-xs font-bold">↻ Ghi đè toàn bộ</button>
         </div>
       </div>
 
-      <input type="text" id="filter-search" oninput="render()" placeholder="🔍 Tìm theo diễn giải hoặc ghi chú..." />
-      <select id="filter-type" onchange="render()">
+      <input type="text" id="filter-search" placeholder="🔍 Tìm theo diễn giải hoặc ghi chú..." />
+      <select id="filter-type">
         <option value="all">Tất cả loại (Thu & Chi)</option>
         <option value="income">Chỉ Thu nhập (+)</option>
         <option value="expense">Chỉ Chi tiêu (-)</option>
       </select>
-      <select id="filter-category" onchange="render()">
+      <select id="filter-category">
         <option value="all">Tất cả danh mục</option>
       </select>
-      <button type="button" onclick="clearFilters()" class="w-full py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Xóa lọc</button>
+      <button type="button" id="btn-clear-filter" class="w-full py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Xóa lọc</button>
 
       <div class="overflow-x-auto pt-2">
         <table class="w-full text-left border-collapse text-xs">
@@ -231,11 +224,18 @@
       income: ['Lương', 'Thưởng', 'Đầu tư', 'Kinh doanh', 'Thu nhập khác']
     };
     let currentType = 'expense';
-    let transactions = JSON.parse(localStorage.getItem('ql_thuchi_data') || '[]');
+    let transactions = [];
+    try {
+      transactions = JSON.parse(localStorage.getItem('ql_thuchi_data') || '[]');
+      if (!Array.isArray(transactions)) transactions = [];
+    } catch (e) {
+      transactions = [];
+    }
     let chartInstance = null;
 
     function showStatus(msg, isError) {
       const el = document.getElementById('status-banner');
+      if (!el) return;
       el.style.display = 'block';
       el.className = isError
         ? 'rounded-xl px-4 py-3 text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200'
@@ -245,6 +245,7 @@
 
     function showModalMsg(msg, isError) {
       const el = document.getElementById('modal-msg');
+      if (!el) return;
       el.style.display = 'block';
       el.className = isError
         ? 'rounded-lg px-3 py-2 text-xs font-semibold bg-rose-50 text-rose-700'
@@ -278,17 +279,10 @@
       catSelect.innerHTML = CATEGORIES[type].map(c => `<option value="${c}">${c}</option>`).join('');
     }
 
-    function init() {
-      document.getElementById('tx-date').valueAsDate = new Date();
-      setTxType('expense');
-      const allCats = [...CATEGORIES.expense, ...CATEGORIES.income];
-      const filterCat = document.getElementById('filter-category');
-      filterCat.innerHTML = '<option value="all">Tất cả danh mục</option>' + allCats.map(c => `<option value="${c}">${c}</option>`).join('');
-      render();
-    }
-
     function save() {
-      localStorage.setItem('ql_thuchi_data', JSON.stringify(transactions));
+      try {
+        localStorage.setItem('ql_thuchi_data', JSON.stringify(transactions));
+      } catch (e) {}
       render();
     }
 
@@ -315,7 +309,9 @@
         desc,
         note
       });
-      clearForm();
+      document.getElementById('tx-amount').value = '';
+      document.getElementById('tx-desc').value = '';
+      document.getElementById('tx-note').value = '';
       save();
       showStatus('Đã lưu giao dịch mới thành công.', false);
     }
@@ -324,36 +320,6 @@
       transactions = transactions.filter(t => t.id !== id);
       save();
       showStatus('Đã xóa giao dịch.', false);
-    }
-
-    function clearForm() {
-      document.getElementById('tx-amount').value = '';
-      document.getElementById('tx-desc').value = '';
-      document.getElementById('tx-note').value = '';
-    }
-
-    function clearFilters() {
-      document.getElementById('filter-search').value = '';
-      document.getElementById('filter-type').value = 'all';
-      document.getElementById('filter-category').value = 'all';
-      render();
-    }
-
-    function restoreSample() {
-      const today = new Date().toISOString().split('T')[0];
-      transactions = [
-        { id: 1, date: today, type: 'income', category: 'Lương', amount: 15000000, payment: 'Chuyển khoản', desc: 'Lương tháng', note: '' },
-        { id: 2, date: today, type: 'expense', category: 'Ăn uống', amount: 85000, payment: 'Tiền mặt', desc: 'Ăn trưa cơm tấm', note: '' },
-        { id: 3, date: today, type: 'expense', category: 'Nhà ở & Điện nước', amount: 1200000, payment: 'Chuyển khoản', desc: 'Tiền điện tháng này', note: '' }
-      ];
-      save();
-      showStatus('Đã khôi phục dữ liệu mẫu.', false);
-    }
-
-    function resetAll() {
-      transactions = [];
-      save();
-      showStatus('Đã reset sạch toàn bộ dữ liệu.', false);
     }
 
     function render() {
@@ -385,12 +351,54 @@
       document.getElementById('chart-total-badge').textContent = formatVND(totalExp);
       document.getElementById('tx-count-badge').textContent = `${transactions.length} giao dịch`;
 
-      const chartEmpty = document.getElementById('chart-empty');
-      const chartWrapper = document.getElementById('chart-wrapper');
-      if (totalExp === 0) {
-        chartEmpty.classList.remove('hidden');
-        chartWrapper.classList.add('hidden');
+      try {
+        const chartEmpty = document.getElementById('chart-empty');
+        const chartWrapper = document.getElementById('chart-wrapper');
+        if (totalExp === 0 || typeof Chart === 'undefined') {
+          chartEmpty.classList.remove('hidden');
+          chartWrapper.classList.add('hidden');
+        } else {
+          chartEmpty.classList.add('hidden');
+          chartWrapper.classList.remove('hidden');
+          const ctx = document.getElementById('expenseChart').getContext('2d');
+          if (chartInstance) chartInstance.destroy();
+          chartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: Object.keys(expByCat),
+              datasets: [{
+                data: Object.values(expByCat),
+                backgroundColor: ['#0d8a53', '#e11d48', '#f59e0b', '#3b82f6', '#8b5cf6', '#14b8a6', '#64748b']
+              }]
+            },
+            options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
+          });
+        }
+      } catch (e) {}
+
+      const q = (document.getElementById('filter-search').value || '').toLowerCase();
+      const fType = document.getElementById('filter-type').value;
+      const fCat = document.getElementById('filter-category').value;
+
+      const filtered = transactions.filter(t => {
+        const matchQ = t.desc.toLowerCase().includes(q) || (t.note && t.note.toLowerCase().includes(q));
+        const matchT = fType === 'all' || t.type === fType;
+        const matchC = fCat === 'all' || t.category === fCat;
+        return matchQ && matchT && matchC;
+      });
+
+      const tbody = document.getElementById('tx-table-body');
+      const txEmpty = document.getElementById('tx-empty');
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        txEmpty.classList.remove('hidden');
       } else {
-        chartEmpty.classList.add('hidden');
-        chartWrapper.classList.remove('hidden');
-        const ctx = document.getElementBy
+        txEmpty.classList.add('hidden');
+        tbody.innerHTML = filtered.map(t => `
+          <tr>
+            <td class="py-2.5 pr-2 text-slate-500 whitespace-nowrap">${t.date.split('-').reverse().join('/')}</td>
+            <td class="py-2.5 px-2">
+              <div class="font-bold text-slate-800">${t.desc}</div>
+              <div class="text-[10px] text-slate-400">${t.category} • ${t.payment}</div>
+            </td>
+            <td cl
